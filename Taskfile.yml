@@ -1,0 +1,18 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  build:
+    cmds:
+      - go build -o dist/simserv.exe
+    silent: false
+
+  run:
+    deps: [build]
+    dir: dist/
+    cmds:
+      - simserv.exe
