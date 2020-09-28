@@ -8,11 +8,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"golang.org/x/net/websocket"
-
-	sim "github.com/micmonay/simconnect"
 )
-
-var sc *sim.EasySimConnect
 
 // handlers
 
@@ -26,22 +22,24 @@ func wsSimvars(c echo.Context) error {
 		err = websocket.Message.Receive(ws, &msg)
 		if err != nil {
 			log.Printf("error - hdl wsSimvars - websocket.Message.Receive - %s", err)
-			websocket.Message.Send(ws, fmt.Sprintf("ERROR: %v", err))
-			ws.Close()
+			_ = websocket.Message.Send(ws, fmt.Sprintf("ERROR: %v", err))
+			_ = ws.Close()
 			return
 		}
 		fmt.Printf("%s\n", msg)
 
+		// parse simvars
+
 		// connect to simvar
 		sc, cSimVars, err := scConnectToSimVars([]string{"GENERAL ENG THROTTLE LEVER POSITION"})
 		if err != nil {
-			websocket.Message.Send(ws, fmt.Sprintf("ERROR: %v", err))
+			_ = websocket.Message.Send(ws, fmt.Sprintf("ERROR: %v", err))
 			log.Printf("error - scConnectToSimVars - %s", err)
 			return
 		}
 
 		defer func() {
-			ws.Close()
+			_ = ws.Close()
 			sc.Close()
 		}()
 
@@ -60,33 +58,18 @@ func wsSimvars(c echo.Context) error {
 						return
 					}
 				}
-				/*default:
-				//time.Sleep(500 * time.Millisecond)
-				chanlen := len(cSimVars)
-				log.Printf("chan len: %d\n", chanlen)
-				//log.Printf("ras\n")
-
-				*/
 			}
-
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 	return nil
 }
 
 func main() {
-	// connect
-	/*
-		sc, err = scConnect()
-		if err != nil {
-			log.Printf("error: %v", err)
-			os.Exit(1)
-		}
-
-	*/
-
+	// display banner
+	fmt.Printf(banner, version)
 	// start http server
 	e := echo.New()
+	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Static("/", "../clients/testdev")

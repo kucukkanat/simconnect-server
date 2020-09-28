@@ -50,7 +50,7 @@ func scConnectToSimVars(simvarsStr []string) (sc *sim.EasySimConnect, cSimVars <
 
 	//toto := simvars["GENERAL ENG RPM"]
 
-	cSimVars, err = sc.ConnectToSimVarSlice(simvarsToConnectTo)
+	cSimVars, err = sc.ConnectToSimVar(simvarsToConnectTo...)
 	if err != nil {
 		return
 	}
