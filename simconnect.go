@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	sim "github.com/micmonay/simconnect"
@@ -34,12 +37,36 @@ func scConnect() (sc *sim.EasySimConnect, err error) {
 }
 
 // connect to simvars
-func scConnectToSimVars(simvarsStr []string) (sc *sim.EasySimConnect, cSimVars <-chan []sim.SimVar, err error) {
-	simvarsToConnectTo := make([]sim.SimVar, len(simvarsStr))
-	for i, svar := range simvarsStr {
+func scConnectToSimVars(reqSimvars []string) (sc *sim.EasySimConnect, cSimVars <-chan []sim.SimVar, err error) {
+	simvarsToConnectTo := make([]sim.SimVar, len(reqSimvars))
+
+	// parse simvars
+	// "SIMVAR NAME:INDEX:ARG1,ARG2,...;SIMVAR NAME:INDEX:ARG1,ARG2,..."
+
+	for i, svar := range reqSimvars {
+		var args []string
+		var index int64
+		parts := strings.Split(svar, ":")
+		l := len(parts)
+		simvar := parts[0]
+		if l > 1 {
+			// parse index
+			if parts[1] != "" {
+				index, err = strconv.ParseInt(parts[1], 10, 64)
+				if err != nil {
+					return nil, nil, fmt.Errorf("scConnectToSimVars failed - bad index %s - %s", parts[1], err)
+				}
+			}
+		}
+		if l > 2 {
+			args = strings.Split(args[2], ",")
+		}
 		// check if exist
-		v := simvars[svar]
-		v.Index = 1
+		if _, exists := simvars[simvar]; !exists {
+			return nil, nil, fmt.Errorf("scConnectToSimVars failed - %s is not a valid simvar", simvar)
+		}
+		v := simvars[simvar](args)
+		v.Index = int(index)
 		simvarsToConnectTo[i] = v
 	}
 

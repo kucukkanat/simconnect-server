@@ -23,7 +23,7 @@
 
     ws.onopen = function() {
         console.log('Connected')
-        ws.send('watchSimvars:PLANE_LONGITUDE');
+        ws.send('FUEL TOTAL QUANTITY');
     }
 
     ws.onmessage = function(evt) {
