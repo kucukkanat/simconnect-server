@@ -74,9 +74,6 @@ func scConnectToSimVars(reqSimvars []string) (sc *sim.EasySimConnect, cSimVars <
 	if err != nil {
 		return
 	}
-
-	//toto := simvars["GENERAL ENG RPM"]
-
 	cSimVars, err = sc.ConnectToSimVar(simvarsToConnectTo...)
 	if err != nil {
 		return

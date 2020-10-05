@@ -7,11 +7,17 @@
 </head>
 
 <body>
-<p id="output"></p>
+<h2><span id="roll"></span></h2>
+<h2 id="pitch"></h2>
 
 <script>
-    var loc = window.location;
-    var uri = 'ws:';
+    let loc = window.location;
+    let uri = 'ws:';
+
+    function radians_to_degrees(radians)
+    {
+        return radians * (180/Math.PI);
+    }
 
     if (loc.protocol === 'https:') {
         uri = 'wss:';
@@ -23,12 +29,21 @@
 
     ws.onopen = function() {
         console.log('Connected')
-        ws.send('FUEL TOTAL QUANTITY');
+        ws.send('PLANE PITCH DEGREES;PLANE BANK DEGREES');
     }
 
     ws.onmessage = function(evt) {
-        let out = document.getElementById('output');
-        out.innerHTML += evt.data + '<br>';
+        let roll = document.getElementById('roll');
+        let pitch = document.getElementById('pitch');
+        console.log(evt);
+        console.log(evt.data);
+        let jdata = JSON.parse(evt.data)
+        console.log(jdata)
+        if (jdata.Simvar === "PLANE BANK DEGREES") {
+            roll.innerHTML = "ROLL: " + radians_to_degrees(jdata.Value) + "  &deg;";
+        } else if (jdata.Simvar === "PLANE PITCH DEGREES") {
+            pitch.innerHTML = "PITCH: " + radians_to_degrees(jdata.Value) + "  &deg;";
+        }
     }
 
 
